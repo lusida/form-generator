@@ -11,7 +11,8 @@
       <el-scrollbar class="right-scrollbar">
         <!-- 组件属性 -->
         <el-form v-show="currentTab==='field' && showField" size="small" label-width="90px">
-          <el-form-item v-if="activeData.__config__.changeTag" label="组件类型">
+          <div v-if="activeData.__config__.isCustom" v-html="activeData.__config__.propertyHtml"/>
+          <el-form-item v-if="activeData.__config__.changeTag" label="组件类型" hidden>
             <el-select
               v-model="activeData.__config__.tagIcon"
               placeholder="请选择组件类型"
@@ -31,8 +32,8 @@
               </el-option-group>
             </el-select>
           </el-form-item>
-          <el-form-item v-if="activeData.__vModel__!==undefined" label="字段名">
-            <el-input v-model="activeData.__vModel__" placeholder="请输入字段名（v-model）" />
+          <el-form-item v-if="activeData.__vModel__!==undefined" label="绑定字段">
+            <el-cascader v-model="activeData.__vModel__" placeholder="请选择结构字段进行数据绑定" :style="{width:'100%'}"/>
           </el-form-item>
           <el-form-item v-if="activeData.__config__.componentName!==undefined" label="组件名">
             {{ activeData.__config__.componentName }}
@@ -302,9 +303,81 @@
               @input="setTimeValue($event)"
             />
           </el-form-item>
-          <template v-if="['el-checkbox-group', 'el-radio-group', 'el-select'].indexOf(activeData.__config__.tag) > -1">
+          <template v-if="['el-checkbox-group', 'el-radio-group', 'el-select'].includes(activeData.__config__.tag)">
             <el-divider>选项</el-divider>
-            <draggable
+            <el-form-item v-if="activeData.__config__.dataType" label="数据方式">
+              <el-radio-group v-model="activeData.__config__.dataType" size="small">
+                <el-radio-button label="bind">
+                  绑定
+                </el-radio-button>
+                <el-radio-button label="dynamic">
+                  请求
+                </el-radio-button>
+                <el-radio-button label="static">
+                  静态
+                </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+
+            <template v-if="activeData.__config__.dataType === 'bind'">
+              <el-form-item label="数据源">
+                <el-cascader
+                  v-model="activeData.__config__.url"
+                  placeholder="请选择绑定数据源"
+                  @blur="$emit('fetch-data', activeData)"/>
+              </el-form-item>
+
+              <template v-if="activeData.props && activeData.props.props">
+                <el-form-item label="显示字段">
+                  <el-select v-model="activeData.props.props.label" placeholder="请选择绑定的显示字段" />
+                </el-form-item>
+                <el-form-item label="值字段">
+                  <el-select v-model="activeData.props.props.value" placeholder="请选择绑定的值字段" />
+                </el-form-item>
+              </template>
+            </template>
+
+            <template v-if="activeData.__config__.dataType === 'dynamic'">
+              <el-form-item label="接口地址">
+                <el-input
+                  v-model="activeData.__config__.url"
+                  :title="activeData.__config__.url"
+                  placeholder="请输入接口地址"
+                  clearable
+                  @blur="$emit('fetch-data', activeData)"
+                >
+                  <el-select
+                    slot="prepend"
+                    v-model="activeData.__config__.method"
+                    :style="{width: '85px'}"
+                    @change="$emit('fetch-data', activeData)"
+                  >
+                    <el-option label="get" value="get" />
+                    <el-option label="post" value="post" />
+                    <el-option label="put" value="put" />
+                    <el-option label="delete" value="delete" />
+                  </el-select>
+                </el-input>
+              </el-form-item>
+              <el-form-item label="数据位置">
+                <el-input
+                  v-model="activeData.__config__.dataPath"
+                  placeholder="请输入数据位置"
+                  @blur="$emit('fetch-data', activeData)"
+                />
+              </el-form-item>
+
+              <template v-if="activeData.props && activeData.props.props">
+                <el-form-item label="标签键名">
+                  <el-input v-model="activeData.props.props.label" placeholder="请输入标签键名" />
+                </el-form-item>
+                <el-form-item label="值键名">
+                  <el-input v-model="activeData.props.props.value" placeholder="请输入值键名" />
+                </el-form-item>
+              </template>
+            </template>
+
+            <draggable v-if="activeData.__config__.dataType === 'static'"
               :list="activeData.__slot__.options"
               :animation="340"
               group="selectItem"
@@ -326,7 +399,7 @@
                 </div>
               </div>
             </draggable>
-            <div style="margin-left: 20px;">
+            <div style="margin-left: 20px;" v-if="activeData.__config__.dataType === 'static'">
               <el-button
                 style="padding-bottom: 0"
                 icon="el-icon-circle-plus-outline"
@@ -341,16 +414,38 @@
 
           <template v-if="['el-cascader', 'el-table'].includes(activeData.__config__.tag)">
             <el-divider>选项</el-divider>
-            <el-form-item v-if="activeData.__config__.dataType" label="数据类型">
+            <el-form-item v-if="activeData.__config__.dataType" label="数据方式">
               <el-radio-group v-model="activeData.__config__.dataType" size="small">
+                <el-radio-button label="bind">
+                  绑定
+                </el-radio-button>
                 <el-radio-button label="dynamic">
-                  动态数据
+                  请求
                 </el-radio-button>
                 <el-radio-button label="static">
-                  静态数据
+                  静态
                 </el-radio-button>
               </el-radio-group>
             </el-form-item>
+
+            <template v-if="activeData.__config__.dataType === 'bind'">
+              <el-form-item label="数据源">
+                <el-cascader
+                  v-model="activeData.__config__.url"
+                  :title="activeData.__config__.url"
+                  placeholder="请选择绑定数据源"
+                  @blur="$emit('fetch-data', activeData)"/>
+              </el-form-item>
+
+              <template v-if="activeData.props && activeData.props.props">
+                <el-form-item label="显示字段">
+                  <el-select v-model="activeData.props.props.label" placeholder="请选择绑定的显示字段" />
+                </el-form-item>
+                <el-form-item label="值字段">
+                  <el-select v-model="activeData.props.props.value" placeholder="请选择绑定的值字段" />
+                </el-form-item>
+              </template>
+            </template>
 
             <template v-if="activeData.__config__.dataType === 'dynamic'">
               <el-form-item label="接口地址">
@@ -654,7 +749,7 @@ import TreeNodeDialog from '@/views/index/TreeNodeDialog'
 import { isNumberStr } from '@/utils/index'
 import IconsDialog from './IconsDialog'
 import {
-  inputComponents, selectComponents, layoutComponents
+  inputComponents, selectComponents, layoutComponents, customComponents
 } from '@/components/generator/config'
 import { saveFormConf } from '@/utils/db'
 

@@ -159,6 +159,10 @@ export const selectComponents = [
       tag: 'el-select',
       tagIcon: 'select',
       layout: 'colFormItem',
+      url: 'https://www.fastmock.site/mock/f8d7a54fb1e60561e2f720d5a810009d/fg/cascaderList',
+      method: 'get',
+      dataPath: 'list',
+      dataType: 'static',
       span: 24,
       required: true,
       regList: [],
@@ -176,6 +180,12 @@ export const selectComponents = [
     },
     placeholder: '请选择',
     style: { width: '100%' },
+    props: {
+      props: {
+        label: 'label',
+        value: 'value'
+      }
+    },
     clearable: true,
     disabled: false,
     filterable: false,
@@ -194,7 +204,7 @@ export const selectComponents = [
       tagIcon: 'cascader',
       layout: 'colFormItem',
       defaultValue: [],
-      dataType: 'dynamic',
+      dataType: 'bind',
       span: 24,
       required: true,
       regList: [],
@@ -238,6 +248,7 @@ export const selectComponents = [
       defaultValue: undefined,
       layout: 'colFormItem',
       span: 24,
+      dataType: 'static',
       optionType: 'default',
       regList: [],
       required: true,
@@ -254,6 +265,12 @@ export const selectComponents = [
       }]
     },
     style: {},
+    props: {
+      props: {
+        label: 'label',
+        value: 'value'
+      }
+    },
     size: 'medium',
     disabled: false
   },
@@ -267,6 +284,7 @@ export const selectComponents = [
       showLabel: true,
       labelWidth: null,
       layout: 'colFormItem',
+      dataType: 'static',
       optionType: 'default',
       required: true,
       regList: [],
@@ -284,6 +302,12 @@ export const selectComponents = [
       }]
     },
     style: {},
+    props: {
+      props: {
+        label: 'label',
+        value: 'value'
+      }
+    },
     size: 'medium',
     min: null,
     max: null,
@@ -627,3 +651,25 @@ export const layoutComponents = [
     align: 'top'
   }
 ]
+
+// 自定义组件 【左面板】
+export const customComponents = {
+  getComponents() {
+    const data = [{
+      __config__: {
+        isCustom: true,
+        layout: 'rowFormItem',
+        tagIcon: 'row',
+        label: '测试自定义组件',
+        layoutTree: true,
+        document: 'https://element.eleme.cn/#/zh-CN/component/layout#row-attributes',
+        propertyHtml: '<input v-value="activeData.label"/>'
+      },
+      type: 'default',
+      justify: 'start',
+      align: 'top'
+    }]
+
+    return data
+  }
+}
